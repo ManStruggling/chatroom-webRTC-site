@@ -24,11 +24,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --config.minimumReleaseAge=0
 
       - name: Run ESLint
         run: pnpm run lint
@@ -52,20 +52,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy to Railway via CLI
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_SERVICE_NAME: ${{ secrets.RAILWAY_SERVICE_NAME }}
+          # Workspace Token: generated from railway.com/account/tokens (select your workspace)
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "Error: RAILWAY_TOKEN is not configured in GitHub Secrets."
-            exit 1
+          ARGS="--detach"
+
+          # Specify project ID (required when using workspace token)
+          if [ -n "${{ secrets.RAILWAY_PROJECT_ID }}" ]; then
+            ARGS="$ARGS --project ${{ secrets.RAILWAY_PROJECT_ID }}"
           fi
-          
-          if [ -n "$RAILWAY_SERVICE_NAME" ]; then
-            echo "Deploying to Railway service: $RAILWAY_SERVICE_NAME"
-            npx @railway/cli up --service "$RAILWAY_SERVICE_NAME" --detach
-          else
-            echo "Deploying to Railway default service..."
-            npx @railway/cli up --detach
+
+          # Optionally target a specific service
+          if [ -n "${{ secrets.RAILWAY_SERVICE_NAME }}" ]; then
+            ARGS="$ARGS --service ${{ secrets.RAILWAY_SERVICE_NAME }}"
           fi
+
+          # Optionally target a specific environment (defaults to production)
+          if [ -n "${{ secrets.RAILWAY_ENVIRONMENT }}" ]; then
+            ARGS="$ARGS --environment ${{ secrets.RAILWAY_ENVIRONMENT }}"
+          fi
+
+          echo "Running: railway up $ARGS"
+          railway up $ARGS
