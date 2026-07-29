@@ -10,7 +10,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --config.minimumReleaseAge=0
 
 # Copy project source
 COPY . .
@@ -30,7 +30,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml ./
 
 # Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile --config.minimumReleaseAge=0
 
 # Copy built dist and server files
 COPY --from=builder /app/dist ./dist
