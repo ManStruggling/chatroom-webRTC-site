@@ -43,8 +43,8 @@ ENV NODE_ENV=production
 ENV PORT=3001
 EXPOSE 3001
 
-# Health check endpoint verification
+# Health check (Node fetch — alpine image has no wget by default)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT}/health || exit 1
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||3001)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 CMD ["node", "server/index.js"]

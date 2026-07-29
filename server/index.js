@@ -20,9 +20,8 @@ app.get('/health', (req, res) => {
 const distPath = path.join(__dirname, '../dist');
 app.use(express.static(distPath));
 
-// Fallback to SPA index.html for unknown routes
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/health')) return next();
+// Fallback to SPA index.html for unknown routes (Express 5 path-to-regexp syntax)
+app.get('/{*splat}', (req, res, next) => {
   res.sendFile(path.join(distPath, 'index.html'), (err) => {
     if (err) next();
   });
@@ -126,11 +125,12 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
+const PORT = Number(process.env.PORT) || 3001;
+const HOST = process.env.HOST || '0.0.0.0';
+server.listen(PORT, HOST, () => {
   console.log(`====================================================`);
-  console.log(` WebRTC Express Signaling Server running on port ${PORT}`);
-  console.log(` Health check available at: http://localhost:${PORT}/health`);
+  console.log(` WebRTC Express Signaling Server running on http://${HOST}:${PORT}`);
+  console.log(` Health check available at: http://${HOST}:${PORT}/health`);
   console.log(` Note: P2P Data & Chat is handled via WebRTC RTCDataChannel`);
   console.log(`====================================================`);
 });
