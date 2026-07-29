@@ -74,4 +74,31 @@ export default defineConfig([
   },
 ])
 
+
+
+## Docker & Deployment
+
+### Local Docker Build & Test
+
+```bash
+# Build Docker image
+docker build -t webrtc-demo .
+
+# Run container locally
+docker run -p 3001:3001 -e PORT=3001 webrtc-demo
 ```
+
+Access the application at `http://localhost:3001` and health check at `http://localhost:3001/health`.
+
+### CI/CD Deployment with GitHub Actions & Railway
+
+The project includes an automated GitHub Actions pipeline (`.github/workflows/deploy.yml`) that:
+1. Lints code and validates Vite compilation.
+2. Builds and tests Docker image.
+3. Automatically deploys to Railway on push to `main` / `master`.
+
+#### GitHub Secrets Configuration
+To enable Railway deployment, add the following secret in your GitHub Repository under **Settings > Secrets and variables > Actions**:
+
+- **`RAILWAY_TOKEN`**: (Required) Your Railway Workspace API Token or Service Token.
+- **`RAILWAY_SERVICE_NAME`**: (Optional) Service name in Railway if your project contains multiple services.
