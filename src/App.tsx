@@ -53,9 +53,11 @@ export function App() {
     event.preventDefault();
     const targetRoom = roomId.trim() || 'default-room';
     setRoomId(targetRoom);
+    setInRoom(true);
     const joined = await joinRoom(targetRoom);
-    if (joined) setInRoom(true);
-    else alert('Could not access camera or microphone. Please check browser permissions.');
+    if (!joined) {
+      alert('Could not access camera or microphone. Please check browser permissions.');
+    }
   };
 
   const handleLeaveRoom = () => {
