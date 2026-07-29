@@ -3,14 +3,15 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-# Enable pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Enable pnpm and disable supply-chain release-age check (required in CI)
+RUN corepack enable && corepack prepare pnpm@latest --activate && \
+    pnpm config set minimum-release-age 0
 
 # Copy lock files and package definitions
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile --config.minimumReleaseAge=0
+RUN pnpm install --frozen-lockfile
 
 # Copy project source
 COPY . .
@@ -23,14 +24,15 @@ FROM node:24-alpine AS runner
 
 WORKDIR /app
 
-# Enable pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Enable pnpm and disable supply-chain release-age check (required in CI)
+RUN corepack enable && corepack prepare pnpm@latest --activate && \
+    pnpm config set minimum-release-age 0
 
 # Copy lock files and package definitions
 COPY package.json pnpm-lock.yaml ./
 
 # Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile --config.minimumReleaseAge=0
+RUN pnpm install --prod --frozen-lockfile
 
 # Copy built dist and server files
 COPY --from=builder /app/dist ./dist
