@@ -2,6 +2,11 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
@@ -9,6 +14,18 @@ app.use(cors());
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', server: 'WebRTC Express Signaling Server', timestamp: new Date().toISOString() });
+});
+
+// Serve static frontend assets if build exists
+const distPath = path.join(__dirname, '../dist');
+app.use(express.static(distPath));
+
+// Fallback to SPA index.html for unknown routes
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/health')) return next();
+  res.sendFile(path.join(distPath, 'index.html'), (err) => {
+    if (err) next();
+  });
 });
 
 const server = http.createServer(app);
