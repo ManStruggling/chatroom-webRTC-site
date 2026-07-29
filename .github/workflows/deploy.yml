@@ -67,14 +67,13 @@ jobs:
             ARGS="$ARGS --project ${{ secrets.RAILWAY_PROJECT_ID }}"
           fi
 
+          # --environment is required when --project is specified; default to 'production'
+          ENVIRONMENT="${{ secrets.RAILWAY_ENVIRONMENT }}"
+          ARGS="$ARGS --environment ${ENVIRONMENT:-production}"
+
           # Optionally target a specific service
           if [ -n "${{ secrets.RAILWAY_SERVICE_NAME }}" ]; then
             ARGS="$ARGS --service ${{ secrets.RAILWAY_SERVICE_NAME }}"
-          fi
-
-          # Optionally target a specific environment (defaults to production)
-          if [ -n "${{ secrets.RAILWAY_ENVIRONMENT }}" ]; then
-            ARGS="$ARGS --environment ${{ secrets.RAILWAY_ENVIRONMENT }}"
           fi
 
           echo "Running: railway up $ARGS"
